@@ -8,11 +8,11 @@ from dung.entities.monsters.monster import Monster
 from dung.game_settings import game_settings
 from dung.size_settings import SIZES
 from dung.font_settings import FONTS
+from dung.images_loader import IMAGES
 from dung.battle_log import BattleLog
 from dung.music_controller import MusicController
-from dung.monster_settings import MONSTERS_SETTINGS, HEROES_SETTINGS
+from dung.monster_settings import MONSTERS_SETTINGS
 from dung.settings import *
-from dung.entities.entity import Entity
 from dung.ui.screens.battle import draw_battle_screen
 
 from dung.ui import *
@@ -124,6 +124,7 @@ def handle_settings_items_events():
         game_settings.resolution = event.resolution
         SIZES.update_resolution(event.resolution[0], event.resolution[1])
         FONTS.resize_fonts(game_settings.font_name, event.resolution[1])
+        IMAGES.update_by_resolution()
         screen = create_screen(game_settings.fullscreen)
     elif event.type == SETTINGS_MENU_TOGGLE_SOUND:
         game_settings.sound = event.sound
