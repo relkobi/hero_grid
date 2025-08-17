@@ -16,6 +16,7 @@ from dung.entities.entity import Entity
 from dung.ui.screens.battle import draw_battle_screen
 
 from dung.ui import *
+from dung.ui.screens.settings_screen import draw_settings_screen
 
 pygame.init()
 
@@ -54,7 +55,6 @@ def create_screen(fullscreen):
     
     return pygame.display.set_mode(size, flags)
 
-# screen = pygame.display.set_mode((WIDTH + SIDEBAR_SECTION_SIZE, HEIGHT + HEADER_SECTION_SIZE))
 screen = create_screen(game_settings.fullscreen)
 
 def place_monsters():
@@ -104,6 +104,34 @@ def check_battle_results():
     
     return BATTLE_SCREEN
 
+def handle_settings_items_events():
+    global screen, state, options_state
+
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+        if state == SETTINGS_SCREEN:
+            state = START_SCREEN
+        else:
+            options_state = None
+    elif event.type == SETTINGS_MENU_BACK:
+        if state == SETTINGS_SCREEN:
+            state = START_SCREEN
+        else:
+            options_state = None
+    elif event.type == SETTINGS_MENU_FULLSCREEN:
+        game_settings.fullscreen = event.fullscreen
+        screen = create_screen(game_settings.fullscreen)
+    elif event.type == SETTINGS_MENU_SET_RESOLUTION:
+        game_settings.resolution = event.resolution
+        SIZES.update_resolution(event.resolution[0], event.resolution[1])
+        FONTS.resize_fonts(game_settings.font_name, event.resolution[1])
+        screen = create_screen(game_settings.fullscreen)
+    elif event.type == SETTINGS_MENU_TOGGLE_SOUND:
+        game_settings.sound = event.sound
+        music_controller.set_sound(game_settings.sound)
+    elif event.type == SETTINGS_MENU_SET_SOUND_VOLUME:
+        game_settings.volume = event.volume
+        music_controller.set_volume(game_settings.volume)
+
 # Main game loop
 running = True
 while running:
@@ -121,12 +149,15 @@ while running:
                 elif event.item == SS_COMPENDIUM_ITEM:
                     state = START_SCREEN # TODO
                 elif event.item == SS_SETTINGS_ITEM:
-                    state = START_SCREEN # TODO
+                    state = SETTINGS_SCREEN
                 elif event.item == SS_CREDITS_ITEM:
                     state = START_SCREEN # TODO
                 elif event.item == SS_EXIT_GAME_ITEM:
                     running = False
                 break
+        
+        elif state == SETTINGS_SCREEN:
+            handle_settings_items_events()
 
         elif state == HERO_SELECT_SCREEN:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -161,19 +192,8 @@ while running:
                         running = False
                         break
             elif options_state is OM_SETTINGS_ITEM:
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    options_state = None
-                elif event.type == SETTINGS_MENU_BACK:
-                    options_state = None
-                elif event.type == SETTINGS_MENU_FULLSCREEN:
-                    game_settings.fullscreen = event.fullscreen
-                    screen = create_screen(game_settings.fullscreen)
-                elif event.type == SETTINGS_MENU_TOGGLE_SOUND:
-                    game_settings.sound = event.sound
-                    music_controller.set_sound(game_settings.sound)
-                elif event.type == SETTINGS_MENU_SET_SOUND_VOLUME:
-                    game_settings.volume = event.volume
-                    music_controller.set_volume(game_settings.volume)
+                handle_settings_items_events()
+
 
         elif state == GAME_RUNNING:
             move = False
@@ -299,6 +319,9 @@ while running:
     if state == START_SCREEN:
         music_controller.set_state_music(START_SCREEN)
         draw_start_screen(screen, event_list)
+
+    elif state == SETTINGS_SCREEN:
+        draw_settings_screen(screen, event_list)
 
     elif state == HERO_SELECT_SCREEN:
         music_controller.set_state_music(START_SCREEN)

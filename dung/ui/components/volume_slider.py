@@ -16,10 +16,17 @@ class VolumeSlider:
         self.event_type = event_type
         self.dragging = False
         self.font = font
+        self.dirty = False
 
         self.line_color = BLACK
         self.handle_color = BLACK
         self.text_color = BLACK
+
+    def resize(self, x, y, width, font):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.font = font
 
     def draw(self, screen):
         # Draw volume bar (centered)
@@ -37,7 +44,7 @@ class VolumeSlider:
 
         # Draw volume text above the slider
         label = self.font.render(f"Volume: {int(round(self.volume * 100))}%", True, self.text_color)
-        text_rect = label.get_rect(center=(self.x, self.y - 40))
+        text_rect = label.get_rect(center=(self.x, self.y - self.font.get_height()))
         screen.blit(label, text_rect)
 
     def handle_event(self, event):

@@ -1,75 +1,68 @@
+from pydoc import text
 import pygame
-import math
-
-pygame.init()
-screen = pygame.display.set_mode((400, 300))
-pygame.display.set_caption("Accurate Square Pie Chart")
-
-# Colors
-WHITE = (255, 255, 255)
-BLUE = (0, 120, 255)
-DARK_BLUE = (0, 80, 180)
-
-# Square setup
-rect = pygame.Rect(100, 80, 150, 150)
-percentage = 123
-  # Target fill % (0 to 100)
-
-def draw_square_pie(surface, rect, percent, color):
-    if percent <= 0:
-        return  # Nothing to draw
-
-    # Create a surface to draw on
-    pie_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-
-    center = (rect.width // 2, rect.height // 2)
-    total_area = rect.width * rect.height
-    target_area = (percent / 100) * total_area
-
-    # Parameters
-    num_steps = 360  # More = smoother pie
-    step_angle = 2 * math.pi / num_steps
-    current_area = 0
-    points = [center]
-
-    # Start drawing sectors until we hit the desired area
-    for i in range(num_steps + 1):
-        angle = i * step_angle
-        x = center[0] + rect.width * math.cos(angle - math.pi / 2)
-        y = center[1] + rect.height * math.sin(angle - math.pi / 2)
-
-        x = max(0, min(rect.width, x))
-        y = max(0, min(rect.height, y))
-
-        if i > 0:
-            # Estimate triangle area between center and two points
-            ax, ay = points[-1]
-            bx, by = x, y
-            tri_area = 0.5 * abs((ax - center[0]) * (by - center[1]) - (bx - center[0]) * (ay - center[1]))
-            current_area += tri_area
-
-            if current_area >= target_area:
-                break
-
-        points.append((x, y))
-
-    if len(points) > 2:
-        pygame.draw.polygon(pie_surface, color, points)
-        surface.blit(pie_surface, rect.topleft)
+from dung.font_settings import FONTS
 
 
-# Main loop
-running = True
-while running:
-    screen.fill(WHITE)
-    pygame.draw.rect(screen, BLUE, rect)  # Draw base square
+mouse_pos = pygame.mouse.get_pos()
+font = FONTS.MEDUIM_FONT
 
-    draw_square_pie(screen, rect, percentage, DARK_BLUE)
+label = font.render(text, True, BLACK)
+text_rect = label.get_rect(center=(x, y))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+# Main button rectangle
+rect = pygame.Rect(0, 0, 600, 60)
+rect.center = (x, y)
 
-    pygame.display.flip()
+# Triangle size and position offsets
+triangle_size = 20
+spacing = 20
 
-pygame.quit()
+# LEFT triangle (◄)
+left_triangle = [
+    (x - rect.width // 2 - spacing, y),                         # tip
+    (x - rect.width // 2 - spacing + triangle_size, y - 10),    # top
+    (x - rect.width // 2 - spacing + triangle_size, y + 10),    # bottom
+]
+
+# RIGHT triangle (►)
+right_triangle = [
+    (x + rect.width // 2 + spacing, y),                         # tip
+    (x + rect.width // 2 + spacing - triangle_size, y - 10),    # top
+    (x + rect.width // 2 + spacing - triangle_size, y + 10),    # bottom
+]
+
+# Create small Rects for click detection
+left_click_area = pygame.Rect(
+    x - rect.width // 2 - spacing, y - 10, triangle_size, 20
+)
+right_click_area = pygame.Rect(
+    x + rect.width // 2 + spacing - triangle_size, y - 10, triangle_size, 20
+)
+
+# Color changes on hover
+if rect.collidepoint(mouse_pos):
+    color = YELLOW
+else:
+    color = WHITE
+
+# Check triangle clicks
+for event in event_list:
+    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if left_click_area.collidepoint(mouse_pos):
+            print("Left triangle clicked — previous option")
+            # You can replace this with an actual event trigger
+        elif right_click_area.collidepoint(mouse_pos):
+            print("Right triangle clicked — next option")
+            # Same here for event trigger
+        elif rect.collidepoint(mouse_pos):
+            print("Center button clicked")
+            pygame.event.post(pygame.event.Event(publish_event, event_data))
+
+# Draw everything
+pygame.draw.rect(screen, color, rect, border_radius=2)
+pygame.draw.rect(screen, BLACK, rect, border_radius=2, width=1)
+screen.blit(label, text_rect)
+
+# Draw triangles
+pygame.draw.polygon(screen, BLACK, left_triangle)
+pygame.draw.polygon(screen, BLACK, right_triangle)

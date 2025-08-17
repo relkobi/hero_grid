@@ -37,7 +37,7 @@ def draw_options_menu(screen, event_list):
 
     # Popup Frame
     x_center = int(screen.get_width() // 2)
-    options_rect = pygame.Rect(0, 0, 800, 600)
+    options_rect = pygame.Rect(0, 0, max(int(screen.get_width() * 0.7), 800), min(SIZES.SCREEN_HEIGHT - SIZES.HEADER_SECTION_SIZE * 2, max(screen.get_height() * 0.8, 600)))
     options_rect.center = (x_center, (screen.get_height() - SIZES.HEADER_SECTION_SIZE) // 2 + SIZES.HEADER_SECTION_SIZE)
 
     pygame.draw.rect(screen, WHITE, options_rect, border_radius=10)

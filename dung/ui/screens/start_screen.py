@@ -4,27 +4,13 @@ import pygame
 from dung.settings import *
 from dung.size_settings import SIZES
 from dung.font_settings import FONTS
+from dung.ui.components.titled_grid import draw_titled_grid
 
-def _draw_grid(screen):
-    grid_size = int(SIZES.SCREEN_HEIGHT * 0.1)
-    x = grid_size // 2
-    y = grid_size // 2
-    width = SIZES.SCREEN_WIDTH - grid_size
-    height = grid_size * 3
+def get_base_width():
+    return max(SIZES.SCREEN_WIDTH * 0.4, 600)
 
-    # Vertical Lines
-    for xx in range(x + grid_size // 2, x + width, grid_size):
-        pygame.draw.line(screen, GRAY, (xx, y), (xx, y + height), width=2)
-    # Horizontal Lines
-    for yy in range(y + grid_size // 2, y + height, grid_size):
-        pygame.draw.line(screen, GRAY, (x, yy), (x + width, yy), width=2)
-
-def _render_menu_title(screen, font, color, text, x, y):
-
-    label = font.render(text, True, color)
-    rect = label.get_rect(center=(x, y))
-
-    screen.blit(label, rect)
+def get_base_height():
+    return max(FONTS.MEDUIM_FONT.get_height() * 1.4, 60)
 
 def _render_start_screen_button(screen, event_list, item, x: int, y: int):
     mouse_pos = pygame.mouse.get_pos()
@@ -33,7 +19,7 @@ def _render_start_screen_button(screen, event_list, item, x: int, y: int):
     label = font.render(item, True, BLACK)
     text_rect = label.get_rect(center=(x, y))
     
-    rect = pygame.Rect(x, y, SIZES.SCREEN_WIDTH * 0.5, SIZES.SCREEN_HEIGHT * 0.08)
+    rect = pygame.Rect(x, y, get_base_width(), get_base_height())
     rect.center = (x, y)
     # Brighten color on hover
     if rect.collidepoint(mouse_pos):
@@ -51,14 +37,13 @@ def _render_start_screen_button(screen, event_list, item, x: int, y: int):
 
 def draw_start_screen(screen, event_list):
     x_center = SIZES.SCREEN_WIDTH // 2
-    y_offset = SIZES.SCREEN_HEIGHT * 0.2
+    y_offset = SIZES.SCREEN_HEIGHT * 0.15
 
-    _draw_grid(screen)
-    _render_menu_title(screen, FONTS.START_FONT, BLACK, GAME_NAME, x_center, y_offset)
+    draw_titled_grid(screen)
 
     y_offset += SIZES.SCREEN_HEIGHT * 0.3
 
     menu_items = [SS_START_GAME_ITEM, SS_COMPENDIUM_ITEM, SS_SETTINGS_ITEM, SS_CREDITS_ITEM, SS_EXIT_GAME_ITEM]
     for item in menu_items:
         _render_start_screen_button(screen, event_list, item, x_center, y_offset)
-        y_offset += SIZES.SCREEN_HEIGHT * 0.1
+        y_offset += int(get_base_height() * 1.2)
