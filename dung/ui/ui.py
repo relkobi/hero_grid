@@ -1,0 +1,159 @@
+# ui.py
+
+import pygame
+from dung.size_settings import SIZES
+from dung.monster_settings import LEVELS_SETTINGS, WEAPON_SETTINGS
+from dung.settings import *
+from dung.utils import *
+from dung.font_settings import FONTS
+
+knight_img = pygame.image.load(resource_path("dung/assets/knight.png"))
+knight_img = pygame.transform.scale(knight_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+rogue_img = pygame.image.load(resource_path("dung/assets/rogue.png"))
+rogue_img = pygame.transform.scale(rogue_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+mage_img = pygame.image.load(resource_path("dung/assets/mage.png"))
+mage_img = pygame.transform.scale(mage_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+hero_images = {
+    "knight": knight_img,
+    "rogue": rogue_img,
+    "mage": mage_img,
+}
+
+goblin_img = pygame.image.load(resource_path("dung/assets/goblin.png"))
+goblin_img = pygame.transform.scale(goblin_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+skeleton_img = pygame.image.load(resource_path("dung/assets/skeleton.png"))
+skeleton_img = pygame.transform.scale(skeleton_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+
+health_potion_img = pygame.image.load(resource_path("dung/assets/health_potion.png"))
+health_potion_img = pygame.transform.scale(health_potion_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+
+# def draw_tooltip(screen, text, pos):
+#     font = pygame.font.SysFont(None, 24)
+#     label = font.render(text, True, (255, 255, 255))
+#     padding = 6
+#     bg_rect = label.get_rect(topleft=(pos[0] + 10, pos[1] + 10))
+#     pygame.draw.rect(screen, (0, 0, 0), bg_rect.inflate(padding * 2, padding))
+#     screen.blit(label, bg_rect)
+
+def draw_grid(screen, event_list):
+    mouse_pos = pygame.mouse.get_pos()
+    for x in range(0, COLUMNS_COUNT, 1):
+        for y in range(0, ROWS_COUNT, 1):
+            rect = pygame.Rect(x * SIZES.TILE_SIZE, SIZES.HEADER_SECTION_SIZE + y * SIZES.TILE_SIZE, SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+            if rect.collidepoint(mouse_pos):
+                width = 3
+                pygame.draw.rect(screen, darker_color(WHITE), rect)
+                pygame.event.post(pygame.event.Event(GRID_TILE_HOVERED, {"col": x, "row": y}))
+
+
+                for event in event_list:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        pygame.event.post(pygame.event.Event(GRID_TILE_CLICKED, {"col": x, "row": y}))
+            else:
+                width = 1
+            
+            pygame.draw.rect(screen, BLACK, rect, width)
+
+def show_text(screen, font, text, y_offset=0, center=True):
+    label = font.render(text, True, BLACK)
+    rect = label.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + y_offset)) if center else (10, 10 + y_offset)
+    screen.blit(label, rect)
+
+def grid_x_value(position):
+    return position[0] * SIZES.TILE_SIZE
+
+def grid_y_value(position):
+    return SIZES.HEADER_SECTION_SIZE + position[1] * SIZES.TILE_SIZE
+
+def draw_entities(screen, hero, hero_pos, monsters, potions):
+    # Draw hero
+    hero_rect = pygame.Rect(grid_x_value(hero_pos), grid_y_value(hero_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+    screen.blit(hero_images[hero.name.lower()], hero_rect)
+
+    # Draw monsters (green)
+    for monster in monsters:
+        m_rect = pygame.Rect(grid_x_value(monster['pos']), grid_y_value(monster['pos']), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+        monster_type = monster["entity"].name.lower()
+        monster_image = goblin_img if monster_type == "goblin" else skeleton_img
+        screen.blit(monster_image, m_rect)
+
+    # Draw potions (red)
+    for potion in potions:
+        p_rect = pygame.Rect(grid_x_value(potion['pos']) + SIZES.TILE_SIZE // 4, grid_y_value(potion['pos']) + SIZES.TILE_SIZE // 4, SIZES.TILE_SIZE//2, SIZES.TILE_SIZE//2)
+        screen.blit(health_potion_img, p_rect)
+
+def draw_hero_stats(screen, hero):
+    x_offset, y_offset = SIZES.WIDTH + 20, SIZES.HEADER_SECTION_SIZE + 10  # Position to start drawing stats
+
+    label = FONTS.TITLE_FONT.render(hero.name, True, BLACK)
+    screen.blit(label, (x_offset, y_offset))
+    y_offset += FONTS.TITLE_FONT.get_height()
+
+    label = FONTS.TEXT_FONT.render( f"Level: {hero.level}", True, BLACK)
+    screen.blit(label, (x_offset, y_offset))
+    y_offset += FONTS.TEXT_FONT.get_height()
+
+    #XP BAR HERE
+    y_offset += 20
+    next_level_xp = LEVELS_SETTINGS[hero.level]
+    xp_ratio = max(hero.xp / next_level_xp, 0)
+
+    xp_outer_rect = pygame.Rect(x_offset, y_offset, 300, 30)
+    xp_inner_rect = pygame.Rect(x_offset, y_offset, 300 * xp_ratio, 30)
+    y_offset += xp_outer_rect.height
+
+    pygame.draw.rect(screen, WHITE, xp_outer_rect, border_radius=10)
+    pygame.draw.rect(screen, YELLOW, xp_inner_rect, border_radius=10)
+    pygame.draw.rect(screen, BLACK, xp_outer_rect, border_radius=10, width=1)
+
+    xp_text = f"{hero.xp} / {next_level_xp}"
+    xp_label = FONTS.TEXT_FONT.render(xp_text, True, BLACK)
+    xp_text_width, xp_text_height = FONTS.TEXT_FONT.size(xp_text)
+    screen.blit(xp_label, (xp_outer_rect.x + ((300 - xp_text_width) / 2), xp_outer_rect.y + ((30 - xp_text_height) / 2)))
+    y_offset += xp_outer_rect.height
+
+
+    # HERO IMAGE
+    image_size = SIZES.TILE_SIZE * 2
+    hero_image = pygame.image.load(resource_path(f"dung/assets/{hero.name.lower()}.png"))
+    hero_image = pygame.transform.scale(hero_image, (image_size, image_size))
+    image_rect = pygame.Rect(x_offset + (300 - image_size) // 2, y_offset, image_size, image_size)
+    screen.blit(hero_image, image_rect)
+    y_offset += image_size
+
+    #HEALTH BAR HERE
+    health_ratio = max(hero.health / hero.max_health, 0)
+    health_outer_rect = pygame.Rect(x_offset, y_offset, 300, 30)
+    health_inner_rect = pygame.Rect(x_offset, y_offset, 300 * health_ratio, 30)
+
+    pygame.draw.rect(screen, WHITE, health_outer_rect, border_radius=10)
+    pygame.draw.rect(screen, RED_COLOR, health_inner_rect, border_radius=10)
+    pygame.draw.rect(screen, BLACK, health_outer_rect, border_radius=10, width=1)
+
+    health_text = f"{max(hero.health, 0)} / {hero.max_health}"
+    health_label = FONTS.TEXT_FONT.render(health_text, True, BLACK)
+    health_text_width, health_text_height = FONTS.TEXT_FONT.size(health_text)
+    screen.blit(health_label, (health_outer_rect.x + ((300 - health_text_width) / 2), health_outer_rect.y + ((30 - health_text_height) / 2)))
+    y_offset += health_outer_rect.height
+
+    # Hero Stats
+    y_offset += 20 # stats margin
+    weapon_damage = WEAPON_SETTINGS[hero.weapon]["damage"]
+    stats = [
+        f"Strength: {hero.strength}",
+        f"Speed: {hero.speed}",
+        f"Weapon: {hero.weapon} ({weapon_damage[0]}-{weapon_damage[1]})",
+        f"Attacks: {hero.attacks}",
+        f"Damage: {hero.get_damage_string()}",
+        f"Shield: {hero.shield}",
+        f"Block Chance: {hero.block}%",
+        f"Critical Chance: {hero.critical_hit}%",
+    ]
+
+    stat_label_height = FONTS.TEXT_FONT.get_height() + 5
+    for text in stats:
+        label = FONTS.TEXT_FONT.render(text, True, BLACK)
+        screen.blit(label, (x_offset, y_offset))
+        y_offset += stat_label_height  # Space between stats
+
+__all__ = ['draw_grid', 'show_text', 'draw_entities', 'draw_hero_stats']
