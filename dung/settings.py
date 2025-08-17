@@ -1,0 +1,76 @@
+# settings.py
+
+import pygame
+from dung.utils import resource_path
+
+# GAME
+GAME_NAME = "Grid Hero"
+
+# Grid
+TILE_COUNT = 10
+ROWS_COUNT, COLUMNS_COUNT = TILE_COUNT, TILE_COUNT
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (150, 150, 150)
+YELLOW = (255, 222, 33)
+LIGHT_BLUE = (75, 175, 255)
+BLUE_COLOR = (0, 0, 255)
+GREEN_COLOR = (0, 150, 0)
+RED_COLOR = (255, 0, 0)
+
+# Game States
+START_SCREEN = 0
+HERO_SELECT_SCREEN = 1
+GAME_RUNNING = 2
+BATTLE_SCREEN = 30
+BATTLE_END_SCREEN = 31
+WIN_SCREEN = 40
+LOSE_SCREEN = 50
+OPTIONS_SCREEN = 90
+
+# Fonts
+pygame.font.init()
+# FONT_PATH = resource_path("assets/fonts/alagard.ttf")
+# FONT_PATH = resource_path("assets/fonts/upheavtt.ttf")
+FONT_NAME = "upheavtt"
+
+# TEXT_FONT = pygame.font.Font(FONT_PATH, 20)
+# TITLE_FONT = pygame.font.Font(FONT_PATH, 30)
+# MEDUIM_FONT = pygame.font.Font(FONT_PATH, 50)
+# LARGE_FONT = pygame.font.Font(FONT_PATH, 100)
+# START_FONT = pygame.font.Font(FONT_PATH, 200)
+
+# Start Screen Items
+SS_START_GAME_ITEM = "Start Game"
+SS_COMPENDIUM_ITEM = "Compendium"
+SS_SETTINGS_ITEM = "Settings"
+SS_CREDITS_ITEM = "Credits"
+SS_EXIT_GAME_ITEM = "Exit Game"
+
+# Options Menu Items
+OM_NEW_RUN_ITEM = "New Run"
+OM_MAIN_MENU_ITEM = "Main Menu"
+OM_SETTINGS_ITEM = "Settings"
+OM_EXIT_GAME_ITEM = "Exit Game"
+
+# Events
+START_SCREEN_ITEM_CLICKED = pygame.USEREVENT + 100
+
+HERO_SELECTION_HERO_CLICKED = pygame.USEREVENT + 200
+
+HERO_SKILL_USED = pygame.USEREVENT + 300
+
+GRID_TILE_CLICKED = pygame.USEREVENT + 400
+GRID_TILE_HOVERED = pygame.USEREVENT + 401
+
+OPTIONS_MENU_ITEM_CLICKED = pygame.USEREVENT + 800
+
+SETTINGS_MENU_FULLSCREEN = pygame.USEREVENT + 901
+SETTINGS_MENU_TOGGLE_SOUND = pygame.USEREVENT + 902
+SETTINGS_MENU_SET_SOUND_VOLUME = pygame.USEREVENT + 903
+SETTINGS_MENU_BACK = pygame.USEREVENT + 910
+
+# Battle
+BATTEL_LOG_VISIBLE_LINES_COUNT = 6
