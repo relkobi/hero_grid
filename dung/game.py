@@ -16,6 +16,7 @@ from dung.settings import *
 from dung.ui.screens.battle import draw_battle_screen
 
 from dung.ui import *
+from dung.ui.screens.credits_screen import CreditsScreen
 from dung.ui.screens.settings_screen import draw_settings_screen
 
 pygame.init()
@@ -35,6 +36,7 @@ state = START_SCREEN
 clock = pygame.time.Clock()
 show_menu = False
 options_state = None
+credits_screen = CreditsScreen()
 
 line_height = FONTS.TEXT_FONT.get_height()
 scroll_offset = 0
@@ -50,9 +52,9 @@ battle_log = BattleLog(
 music_controller = MusicController(game_settings.sound, game_settings.volume)
 
 def create_screen(fullscreen):
-    flags = pygame.FULLSCREEN if fullscreen else 0
+    flags = (pygame.FULLSCREEN | pygame.SCALED) if fullscreen else 0
     size = (SIZES.SCREEN_WIDTH, SIZES.SCREEN_HEIGHT)
-    
+    print(f"create_screen, {SIZES.SCREEN_WIDTH}x{SIZES.SCREEN_HEIGHT} = {flags}")
     return pygame.display.set_mode(size, flags)
 
 screen = create_screen(game_settings.fullscreen)
@@ -152,13 +154,20 @@ while running:
                 elif event.item == SS_SETTINGS_ITEM:
                     state = SETTINGS_SCREEN
                 elif event.item == SS_CREDITS_ITEM:
-                    state = START_SCREEN # TODO
+                    state = CREDITS_SCREEN
+                    credits_screen.reset()
                 elif event.item == SS_EXIT_GAME_ITEM:
                     running = False
                 break
         
         elif state == SETTINGS_SCREEN:
             handle_settings_items_events()
+            break;
+
+        elif state == CREDITS_SCREEN:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                state = START_SCREEN
+                credits_screen.reset()
 
         elif state == HERO_SELECT_SCREEN:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -323,6 +332,11 @@ while running:
 
     elif state == SETTINGS_SCREEN:
         draw_settings_screen(screen, event_list)
+
+    elif state == CREDITS_SCREEN:
+        screen.fill(BLACK)
+        if not credits_screen.is_finished():
+            credits_screen.update_and_draw(screen)
 
     elif state == HERO_SELECT_SCREEN:
         music_controller.set_state_music(START_SCREEN)
