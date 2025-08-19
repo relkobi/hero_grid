@@ -2,7 +2,7 @@ import math
 import pygame
 from dung.entities.heroes.hero import Hero
 from dung.size_settings import SIZES
-from dung.monster_settings import WEAPON_SETTINGS
+from dung.monster_settings import HEROES_SETTINGS, WEAPON_SETTINGS
 from dung.settings import *
 from dung.ui.components.tooltip import Tooltip
 from dung.utils import *
@@ -118,23 +118,32 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
 
     if (fight_over is not True):
         
-        skills = ["Attack", "Defense", "Reckless Attack", "Bash", "Concentrate"]
+
         hero_modified_strength = hero.strength + hero.get_buff_combine_value("strength", 0)
-        skill_details = [
-            "Perform a basic attack.",
-            "Increases defense value for the next 3 turns.",
-            "A swift attack that deals increased damage with a higher chance to critically hit. There is a chance you may be hit by the enemy's weapon during the attack.",
-            f"Use your shield to strike the enemy for {hero_modified_strength} damage and stun them for 1 turn.",
-            "Increase your strength and defense by 2, and your block chance by 10% for 4 turns."
-        ]
-        pygame_keys = [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]
+        # skill_details = [
+        #     "Perform a basic attack.",
+        #     "Increases defense value for the next 3 turns.",
+        #     "A swift attack that deals increased damage with a higher chance to critically hit. There is a chance you may be hit by the enemy's weapon during the attack.",
+        #     f"Use your shield to strike the enemy for {hero_modified_strength} damage and stun them for 1 turn.",
+        #     "Increase your strength and defense by 2, and your block chance by 10% for 4 turns."
+        # ]
+
         keys = ["SPACE", "Q", "W", "E", "R"]
+        pygame_keys = [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]
+        skill_names = []
+        skill_details = []
+        skill_cooldowns = []
+        for skill_key in pygame_keys:
+            skill_item = hero.get_hero_skills_item(skill_key)
+            skill_names.append(skill_item["name"])
+            skill_details.append(skill_item["details"])
+            skill_cooldowns.append(skill_item["data"].get("cooldown", None))
 
 
         skill_size = SIZES.TILE_SIZE 
         y_skill = SIZES.HEADER_SECTION_SIZE + SIZES.HEIGHT - battle_log.height - skill_size - 20
         mouse_pos = pygame.mouse.get_pos()
-        for i, skill in enumerate(skills):
+        for i, skill_name in enumerate(skill_names):
             skill_rect = pygame.Rect(x_offset + i * (skill_size + 5) ,y_skill, skill_size, skill_size)
             
             is_skill_on_cooldown = not hero.is_skill_active(pygame_keys[i])
@@ -142,17 +151,20 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
                 color = YELLOW
                 if is_skill_on_cooldown:
                     color = WHITE
-
+                
+                footer = None if skill_cooldowns[i] is None else f"Cooldown: {skill_cooldowns[i]}"
                 Tooltip().draw(
                     surface=screen,
                     header_font=FONTS.TITLE_FONT,
-                    header=skill,
+                    header=skill_name,
                     font=FONTS.TEXT_FONT,
                     text=skill_details[i],
                     position=(skill_rect.x, skill_rect.y + skill_size),
                     direction="topleft",  # or "bottomleft", etc.
-                    max_width=skill_size * 5,
-                    max_height=skill_size * 3
+                    max_width=skill_size * 7,
+                    max_height=skill_size * 3,
+                    space_before_footer=footer is not None,
+                    footer=footer
                 )
 
                 for event in event_list:

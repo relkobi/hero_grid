@@ -10,7 +10,7 @@ class Tooltip:
         self.padding = (4, 3)  # (horizontal, vertical)
         self.border_radius = 2
 
-    def draw(self, surface, font, text, position, direction="topleft",header=None, header_font=None, max_width=None, max_height=None):
+    def draw(self, surface, font, text, position, direction="topleft",header=None, header_font=None, max_width=None, max_height=None, space_before_footer=False, footer=None):
         text_surfaces = []
         if header:
             header_lines = self._wrap_text(font, header, max_width) if max_width else [header]
@@ -18,12 +18,23 @@ class Tooltip:
                 text_surfaces.append((header_font or font).render(line, True, (0, 0, 0)) )
 
         text_lines = self._wrap_text(font, text, max_width) if max_width else [text]
+        total_lines = len(text_lines)
         for line in text_lines:
             text_surfaces.append(font.render(line, True, (0, 0, 0)))
 
+        if footer is not None:
+            if space_before_footer:
+                text_surfaces.append(font.render("", True, (0, 0, 0)))
+                total_lines += 1
+                
+            footer_lines = self._wrap_text(font, footer, max_width) if max_width else [footer]
+            for line in footer_lines:
+                text_surfaces.append(font.render(line, True, (0, 0, 0)))
+            total_lines += len(footer_lines)
+
         header_line_height = (header_font or font).get_height()
         text_line_height = font.get_height()
-        total_text_height = header_line_height * len(header_lines) + text_line_height * len(text_lines)
+        total_text_height = header_line_height * len(header_lines) + text_line_height * total_lines
         max_line_width = max(s.get_width() for s in text_surfaces)
 
         # Clip height if needed

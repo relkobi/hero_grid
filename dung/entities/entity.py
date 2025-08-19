@@ -4,6 +4,9 @@ import random
 
 from dung.monster_settings import HEROES_SETTINGS, LEVELS_SETTINGS, WEAPON_SETTINGS
 
+SPECIAL_ATTRIBUTES = ["strength", "speed", "shield", "block", "critical-hit"]
+
+
 class Entity:
     def __init__(self, name, health, strength, speed, weapon="unarmed", attacks=1, shield=0, block=0, critical_hit=1):
         self.name = name
@@ -20,6 +23,17 @@ class Entity:
         self.critical_hit = critical_hit
         self.buffs = []
         self.debuffs = []
+
+    def _get_base_stat(self, key):
+        return getattr(self, key, None) 
+
+    def get_modified_stat(self, key):
+        base_value = self._get_base_stat(key)
+        value_modifier = 0
+        if key in SPECIAL_ATTRIBUTES:
+            value_modifier = self.get_buff_combine_value(key, value_modifier)
+
+        return base_value + value_modifier
 
     def perform_basic_attack(self, other, hero_modifiers={}, enemy_modifier={}):
         weapon_damage = WEAPON_SETTINGS[self.weapon]["damage"]

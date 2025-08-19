@@ -1,3 +1,6 @@
+import pygame
+
+
 MONSTERS_SETTINGS = {
     "goblin": {
         "level": 1,
@@ -58,7 +61,57 @@ HEROES_SETTINGS = {
         "level-strength": 3,
         "level-block-chance": 1,
         "level-critical-hit-chance": 1,
-        "info": "Knight uses his shield to mitigate incoming damage with a chance to completely block it"
+        "info": "Knight uses his shield to mitigate incoming damage with a chance to completely block it",
+        "skills": [
+            {
+                "key": pygame.K_q,
+                "name": "Attack", 
+                "details": "Perform a basic attack",
+                "data": {}
+            },
+            {
+                "key": pygame.K_q,
+                "name": "Defense",
+                "details": "Increases shield by {{shield_bonus}} for the next {{duration}} turns.",
+                "data": {
+                    "shield_bonus": 1,
+                    "duration": 4,
+                    "cooldown": 4
+                }
+            },
+            {
+                "key": pygame.K_w,
+                "name": "Reckless Attack",
+                "details": "A swift attack that deals increased damage by {{damage_increment}}% with a critically hit bonus of {{critical_hit_bonus}}. There is a {{drawback_chance}}% you may be hit by the enemy's weapon during the attack.",
+                "data": {
+                    "damage_increment": 50,
+                    "critical_hit_bonus": 15,
+                    "drawback_chance": 50,
+                    "cooldown": 4
+                }
+            },
+            {
+                "key": pygame.K_e,
+                "name": "Bash", 
+                "details": "Use your shield to strike the enemy for {{strength}} damage and stun them for {{stun_duration}} turn.",
+                "data": {
+                    "strength": 0,
+                    "stun_duration": 10,
+                    "cooldown": 4
+                }
+            },
+            {
+                "key": pygame.K_r,
+                "name": "Concentrate", 
+                "details": "Increase your strength and defense by {{strength_shield_bonus}}, and your block chance by {{block_bonus}}% for {{duration}} turns.",
+                "data": {
+                    "strength_shield_bonus": 2,
+                    "block_bonus": 10,
+                    "duration": 4,
+                    "cooldown": 4
+                }
+            }
+        ]
     },
     "rogue": {
         "is-active": True,
