@@ -8,11 +8,11 @@ from dung.size_settings import SIZES
 credits_lines = [
     "Thank you for playing Hero Grid!",
     "",
-    "Game Design", "Ran Elkobi", "",
-    "Programming", "Ran Elkobi", "",
-    "Art", "Ran Elkobi", "",
+    "Game Design", "Ran", "",
+    "Programming", "Ran", "",
+    "Art", "Ran", "",
     "Music", "Random", "",
-    "Special Thanks", "Tuti", "Ofear Hadad", "",
+    "Special Thanks", "Tuti", "Ofear", "",
     "The End",
     "", "", "", ""
 ]
