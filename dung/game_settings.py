@@ -2,7 +2,7 @@
 class GameSettings:
     def __init__(self):
         self.sound = True
-        self.volume = 0.2
+        self.volume = 0.1
         self.resolution = [1024, 768]
         # self.resolution = [1280, 720]
         # self.resolution = [1920, 1080]

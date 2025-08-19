@@ -54,7 +54,7 @@ music_controller = MusicController(game_settings.sound, game_settings.volume)
 def create_screen(fullscreen):
     flags = (pygame.FULLSCREEN | pygame.SCALED) if fullscreen else 0
     size = (SIZES.SCREEN_WIDTH, SIZES.SCREEN_HEIGHT)
-    print(f"create_screen, {SIZES.SCREEN_WIDTH}x{SIZES.SCREEN_HEIGHT} = {flags}")
+
     return pygame.display.set_mode(size, flags)
 
 screen = create_screen(game_settings.fullscreen)
@@ -84,11 +84,13 @@ def place_potions(monsters):
     return pots
 
 def handle_hero_action(key):
+    hero.tick()
     action_messages = hero.perform_hero_action(current_monster['entity'], key)
     for action_message in action_messages:
         battle_log.add_message(action_message)
 
 def handle_monster_action():
+    current_monster['entity'].tick()
     action_messages = current_monster['entity'].perform_monster_action(hero)
     for action_message in action_messages:
         battle_log.add_message(action_message)
@@ -263,10 +265,17 @@ while running:
                             break
 
         elif state == BATTLE_SCREEN:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+            if event.type == pygame.KEYDOWN or event.type == HERO_SKILL_USED:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     show_menu = True
-                elif event.key in [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]:
+                elif (
+                    event.type == pygame.KEYDOWN and event.key in [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]
+                ) or (
+                    event.type == HERO_SKILL_USED
+                ):
+                    if not hero.is_skill_active(event.key):
+                        continue
+
                     if hero.speed > current_monster['entity'].speed:
                         handle_hero_action(event.key)
                         state = check_battle_results()
@@ -310,6 +319,7 @@ while running:
                 else:    
                     monsters.remove(current_monster)
                     current_monster = None
+                    hero.clear_battle_modifiers()
 
                     if not monsters:
                         state = WIN_SCREEN

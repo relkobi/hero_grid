@@ -29,7 +29,6 @@ class SizeSettings:
         self.SIDEBAR_SECTION_SIZE = self.SCREEN_WIDTH - self.WIDTH
 
         self.TILE_SIZE = self.WIDTH // COLUMNS_COUNT
-        print(f"min_space={min_space}, self.ROOM_SIZE={self.ROOM_SIZE}, self.TILE_SIZE={self.TILE_SIZE}")
 
 
     def update_resolution(self, screen_width: int, screen_height: int):

@@ -1,6 +1,7 @@
 # ui.py
 
 import pygame
+from dung.entities.heroes.hero import Hero
 from dung.size_settings import SIZES
 from dung.monster_settings import LEVELS_SETTINGS, WEAPON_SETTINGS
 from dung.settings import *
@@ -133,21 +134,46 @@ def draw_hero_stats(screen, hero):
     # Hero Stats
     y_offset += 20 # stats margin
     weapon_damage = WEAPON_SETTINGS[hero.weapon]["damage"]
+
     stats = [
-        f"Strength: {hero.strength}",
-        f"Speed: {hero.speed}",
+        _get_attribute_stat_line(hero, "Strength", "strength", hero.strength, 0),
+        _get_attribute_stat_line(hero, "Speed", "speed", hero.speed, 0),
         f"Weapon: {hero.weapon} ({weapon_damage[0]}-{weapon_damage[1]})",
-        f"Attacks: {hero.attacks}",
+        _get_attribute_stat_line(hero, "Attacks", "attacks", hero.attacks, 0),
         f"Damage: {hero.get_damage_string()}",
-        f"Shield: {hero.shield}",
-        f"Block Chance: {hero.block}%",
-        f"Critical Chance: {hero.critical_hit}%",
+        _get_attribute_stat_line(hero, "Shield", "shield", hero.shield, 0),
+        _get_attribute_stat_line(hero, "Block Chance", "block", hero.block, 0),
+        _get_attribute_stat_line(hero, "Critical Chance", "critical_hit", hero.critical_hit, 0),
     ]
+
+    # stats = [
+    #     f"Strength: {hero.strength}",
+    #     f"Speed: {hero.speed}",
+    #     f"Weapon: {hero.weapon} ({weapon_damage[0]}-{weapon_damage[1]})",
+    #     f"Attacks: {hero.attacks}",
+    #     f"Damage: {hero.get_damage_string()}",
+    #     f"Shield: {hero.shield}",
+    #     f"Block Chance: {hero.block}%",
+    #     f"Critical Chance: {hero.critical_hit}%",
+    # ]
 
     stat_label_height = FONTS.TEXT_FONT.get_height() + 5
     for text in stats:
         label = FONTS.TEXT_FONT.render(text, True, BLACK)
         screen.blit(label, (x_offset, y_offset))
         y_offset += stat_label_height  # Space between stats
+
+def _get_attribute_stat_line(hero: Hero, attribute_title: str, attribute_key: str, attribute_base_value: int, default_value: int):
+    attribute_modifier = hero.get_buff_combine_value(attribute_key, default_value)
+    modified = attribute_modifier != default_value
+    attribute_calculated_value = attribute_base_value
+    if modified:
+        attribute_calculated_value += attribute_modifier
+    modified_string = ""
+    if modified:
+        modified_string = f" ({attribute_modifier})"
+
+    return f"{attribute_title}: {attribute_calculated_value}{modified_string}"
+
 
 __all__ = ['draw_grid', 'show_text', 'draw_entities', 'draw_hero_stats']

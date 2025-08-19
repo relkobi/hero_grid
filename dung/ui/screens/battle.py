@@ -1,4 +1,6 @@
+import math
 import pygame
+from dung.entities.heroes.hero import Hero
 from dung.size_settings import SIZES
 from dung.monster_settings import WEAPON_SETTINGS
 from dung.settings import *
@@ -6,10 +8,66 @@ from dung.ui.components.tooltip import Tooltip
 from dung.utils import *
 from dung.font_settings import FONTS
 
-print("battle.py loaded")
+
+def _draw_square_pie(screen, rect, percent, color):
+    if percent <= 0:
+        return
+    if percent >= 100:
+        pygame.draw.rect(screen, color, rect)
+        return
+
+    center = (rect.width / 2, rect.height / 2)
+    w, h = rect.width, rect.height
+
+    # Perimeter of the square path we use (start at top center, go clockwise):
+    # The path is 4 edges: top-center -> top-right -> bottom-right -> bottom-left -> top-left -> top-center
+    # We define these 5 points (the path is closed)
+    path_points = [
+        (w/2, 0),        # top center
+        (w, 0),          # top-right corner
+        (w, h),          # bottom-right corner
+        (0, h),          # bottom-left corner
+        (0, 0),          # top-left corner
+        (w/2, 0)         # back to top center to close loop
+    ]
+
+    # Compute total perimeter length of the path (sum of segments)
+    def dist(p1, p2):
+        return math.hypot(p2[0]-p1[0], p2[1]-p1[1])
+    perimeter = 0
+    for i in range(len(path_points)-1):
+        perimeter += dist(path_points[i], path_points[i+1])
+
+    target_length = (percent / 100) * perimeter
+
+    points = [center]  # start polygon from center
+    length_accum = 0
+
+    # Walk along path_points edges accumulating length until target_length reached
+    for i in range(len(path_points) - 1):
+        start = path_points[i]
+        end = path_points[i + 1]
+        edge_len = dist(start, end)
+
+        if length_accum + edge_len >= target_length:
+            remain = target_length - length_accum
+            ratio = remain / edge_len
+            interp_x = start[0] + (end[0] - start[0]) * ratio
+            interp_y = start[1] + (end[1] - start[1]) * ratio
+            points.append(start)
+            points.append((interp_x, interp_y))
+            break
+        else:
+            points.append(start)
+            length_accum += edge_len
+
+    # Draw polygon on transparent surface and blit it
+    pie_surface = pygame.Surface((w, h), pygame.SRCALPHA)
+    pygame.draw.polygon(pie_surface, color, points)
+    screen.blit(pie_surface, rect.topleft)
 
 
-def draw_battle_screen(screen, event_list, monster, hero, battle_log, fight_over=False):
+def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, fight_over=False):
     x_offset, y_offset = 20, SIZES.HEADER_SECTION_SIZE + 10
     fight_label = FONTS.TITLE_FONT.render(f"Fight level {monster.level} {monster.name}", True, (0, 0, 0))
     screen.blit(fight_label, (x_offset, y_offset))
@@ -61,13 +119,15 @@ def draw_battle_screen(screen, event_list, monster, hero, battle_log, fight_over
     if (fight_over is not True):
         
         skills = ["Attack", "Defense", "Reckless Attack", "Bash", "Concentrate"]
+        hero_modified_strength = hero.strength + hero.get_buff_combine_value("strength", 0)
         skill_details = [
             "Perform a basic attack.",
             "Increases defense value for the next 3 turns.",
             "A swift attack that deals increased damage with a higher chance to critically hit. There is a chance you may be hit by the enemy's weapon during the attack.",
-            "Use your shield to strike the enemy for [str] damage and stun them for 1 turn.",
+            f"Use your shield to strike the enemy for {hero_modified_strength} damage and stun them for 1 turn.",
             "Increase your strength and defense by 2, and your block chance by 10% for 4 turns."
         ]
+        pygame_keys = [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]
         keys = ["SPACE", "Q", "W", "E", "R"]
 
 
@@ -77,8 +137,11 @@ def draw_battle_screen(screen, event_list, monster, hero, battle_log, fight_over
         for i, skill in enumerate(skills):
             skill_rect = pygame.Rect(x_offset + i * (skill_size + 5) ,y_skill, skill_size, skill_size)
             
+            is_skill_on_cooldown = not hero.is_skill_active(pygame_keys[i])
             if skill_rect.collidepoint(mouse_pos):
                 color = YELLOW
+                if is_skill_on_cooldown:
+                    color = WHITE
 
                 Tooltip().draw(
                     surface=screen,
@@ -94,13 +157,24 @@ def draw_battle_screen(screen, event_list, monster, hero, battle_log, fight_over
 
                 for event in event_list:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        pygame.event.post(pygame.event.Event(OPTIONS_MENU_ITEM_CLICKED, {"skill": i}))
+                        pygame.event.post(pygame.event.Event(HERO_SKILL_USED, {"key": pygame_keys[i]}))
             else:
                 color = WHITE
 
             pygame.draw.rect(screen, color, skill_rect, border_radius=2)
             pygame.draw.rect(screen, BLACK, skill_rect, border_radius=2, width=1)
-            skill_label = FONTS.TEXT_FONT.render(keys[i], True, (0, 0, 0))
+
+            if is_skill_on_cooldown:
+                skill_cooldown = hero.get_cooldown(pygame_keys[i])
+                percentage = round(skill_cooldown["turns_left"] / skill_cooldown["total_turns"] * 100)
+                _draw_square_pie(screen, skill_rect, percentage, GRAY)
+
+                cooldown_label = FONTS.TEXT_FONT.render(str(skill_cooldown["turns_left"]), True, BLACK)
+                cooldown_label_rect = cooldown_label.get_rect()
+                cooldown_label_rect.topright = (skill_rect.x + skill_rect.width - 4, skill_rect.y + 1)
+                screen.blit(cooldown_label, cooldown_label_rect)
+
+            skill_label = FONTS.TEXT_FONT.render(keys[i], True, BLACK)
             skill_label_rect = skill_label.get_rect()
             skill_label_rect.bottomleft = (skill_rect.x + 4, skill_rect.y + skill_size - 1)
             screen.blit(skill_label, skill_label_rect)
