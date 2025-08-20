@@ -164,12 +164,14 @@ while running:
         
         elif state == SETTINGS_SCREEN:
             handle_settings_items_events()
-            break;
+            break
 
         elif state == CREDITS_SCREEN:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            print("credits")
+            if event.type == pygame.KEYDOWN:
                 state = START_SCREEN
                 credits_screen.reset()
+                break
 
         elif state == HERO_SELECT_SCREEN:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

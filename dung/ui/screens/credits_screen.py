@@ -6,7 +6,7 @@ from dung.settings import BLACK, WHITE
 from dung.size_settings import SIZES
 
 credits_lines = [
-    "Thank you for playing Hero Grid!",
+    "Thank you for playing Grid Hero!",
     "",
     "Game Design", "Ran", "",
     "Programming", "Ran", "",
