@@ -6,9 +6,9 @@ from dung.entities.heroes.hero import Hero
 from dung.monster_settings import WEAPON_SETTINGS
 
 
-class Knight(Hero):
+class Mage(Hero):
     def __init__(self):
-        super().__init__("knight")
+        super().__init__("mage")
 
     def use_ability_q(self, skill_item, enemy: Entity, ):
         skill_data = skill_item["data"]
@@ -45,7 +45,7 @@ class Knight(Hero):
         stun_duration = skill_data["stun_duration"]
         cooldown = skill_data["cooldown"]
 
-        bash_damage = self.strength + self.get_buff_combine_value("strength", 0)
+        bash_damage = self.strength + self.get_buff_value("strength", 0) + self.get_debuff_value("strength", 0)
         enemy.lose_health(bash_damage)
 
         enemy.set_debuff("stun", 1, stun_duration)

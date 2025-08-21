@@ -3,8 +3,10 @@
 import pygame
 import random
 
-from dung.entities.heroes.knight import Knight
+from dung.battle_exceptions.battle_exception import BattleException
+from dung.entities.heroes import Knight, Rogue, Mage
 from dung.entities.monsters.monster import Monster
+from dung.battle_exceptions.hero_evaded_battle_exception import HeroEvadedBattleException
 from dung.game_settings import game_settings
 from dung.size_settings import SIZES
 from dung.font_settings import FONTS
@@ -14,7 +16,6 @@ from dung.music_controller import MusicController
 from dung.monster_settings import MONSTERS_SETTINGS
 from dung.settings import *
 from dung.ui.screens.battle import draw_battle_screen
-
 from dung.ui import *
 from dung.ui.screens.credits_screen import CreditsScreen
 from dung.ui.screens.settings_screen import draw_settings_screen
@@ -23,10 +24,10 @@ pygame.init()
 
 pygame.display.set_caption("Grid Hero")
 
-
 # Game variables
 hero = None
 hero_pos = None
+hero_last_pos = None
 monsters = []
 potions = []
 current_monster = None
@@ -84,13 +85,30 @@ def place_potions(monsters):
     return pots
 
 def handle_hero_action(key):
-    hero.tick()
-    action_messages = hero.perform_hero_action(current_monster['entity'], key)
-    for action_message in action_messages:
-        battle_log.add_message(action_message)
+    pre_action_messages = hero.tick()
+    for message in pre_action_messages:
+        battle_log.add_message(message)
+    
+    if hero.health <= 0:
+        return
+
+    try:
+        action_messages = hero.perform_hero_action(current_monster['entity'], key)
+        for message in action_messages:
+            battle_log.add_message(message)
+    except BattleException as e:
+        for message in e.action_messages:
+            battle_log.add_message(message)
+        raise e
 
 def handle_monster_action():
-    current_monster['entity'].tick()
+    pre_action_messages = current_monster['entity'].tick()
+    for message in pre_action_messages:
+        battle_log.add_message(message)
+    
+    if current_monster['entity'].health <= 0:
+        return
+
     action_messages = current_monster['entity'].perform_monster_action(hero)
     for action_message in action_messages:
         battle_log.add_message(action_message)
@@ -137,6 +155,16 @@ def handle_settings_items_events():
         game_settings.volume = event.volume
         music_controller.set_volume(game_settings.volume)
 
+def get_hero_by_type(hero_type):
+    if hero_type == "mage":
+        return Mage()
+    elif hero_type == "rogue":
+        return Rogue()
+    elif hero_type == "knight":
+        return Knight()
+    else:
+        raise Exception(f"Unknown Hero Selection {hero_type}")
+
 # Main game loop
 running = True
 while running:
@@ -182,7 +210,7 @@ while running:
                 hero_img = pygame.image.load(resource_path(f"dung/assets/{hero_type}.png"))
                 hero_img = pygame.transform.scale(hero_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
                 # hero_settings = HEROES_SETTINGS[hero_type]
-                hero = Knight()
+                hero = get_hero_by_type(hero_type)
                 hero_pos = [0, ROWS_COUNT // 2]
                 monsters = place_monsters()
                 potions = place_potions(monsters)
@@ -248,6 +276,7 @@ while running:
                 new_y = hero_pos[1] + dy
 
                 if 0 <= new_x < COLUMNS_COUNT and 0 <= new_y < ROWS_COUNT:
+                    hero_last_pos = hero_pos
                     hero_pos = [new_x, new_y]
 
                     # Check monster collision
@@ -277,23 +306,33 @@ while running:
                 ):
                     if not hero.is_skill_active(event.key):
                         continue
-
-                    if hero.speed > current_monster['entity'].speed:
-                        handle_hero_action(event.key)
-                        state = check_battle_results()
-                        if state == BATTLE_SCREEN:
-                            handle_monster_action()
-                            state = check_battle_results()
-                    elif hero.speed == current_monster['entity'].speed:
-                        handle_hero_action(event.key)
-                        handle_monster_action()
-                        state = check_battle_results()
-                    else:
-                        handle_monster_action()
-                        state = check_battle_results()
-                        if state == BATTLE_SCREEN:
+                    try:
+                        if hero.speed > current_monster['entity'].speed:
                             handle_hero_action(event.key)
                             state = check_battle_results()
+                            if state == BATTLE_SCREEN:
+                                handle_monster_action()
+                                state = check_battle_results()
+                        elif hero.speed == current_monster['entity'].speed:
+                            handle_hero_action(event.key)
+                            handle_monster_action()
+                            state = check_battle_results()
+                        else:
+                            handle_monster_action()
+                            state = check_battle_results()
+                            if state == BATTLE_SCREEN:
+                                handle_hero_action(event.key)
+                                state = check_battle_results()
+                    except HeroEvadedBattleException as e:
+                        current_monster['entity'].clear_battle_modifiers()
+                        current_monster['entity'].health = current_monster['entity'].max_health
+                        current_monster = None
+                        hero.clear_battle_modifiers()
+                        hero_pos = hero_last_pos
+                        state = GAME_RUNNING
+                    except Exception:
+                        # Re-raise all other unexpected errors
+                        raise
 
                     if state == BATTLE_END_SCREEN:
                         continue

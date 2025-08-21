@@ -117,17 +117,6 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
     battle_log.draw(screen)
 
     if (fight_over is not True):
-        
-
-        hero_modified_strength = hero.strength + hero.get_buff_combine_value("strength", 0)
-        # skill_details = [
-        #     "Perform a basic attack.",
-        #     "Increases defense value for the next 3 turns.",
-        #     "A swift attack that deals increased damage with a higher chance to critically hit. There is a chance you may be hit by the enemy's weapon during the attack.",
-        #     f"Use your shield to strike the enemy for {hero_modified_strength} damage and stun them for 1 turn.",
-        #     "Increase your strength and defense by 2, and your block chance by 10% for 4 turns."
-        # ]
-
         keys = ["SPACE", "Q", "W", "E", "R"]
         pygame_keys = [pygame.K_SPACE, pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r]
         skill_names = []
@@ -137,7 +126,7 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
             skill_item = hero.get_hero_skills_item(skill_key)
             skill_names.append(skill_item["name"])
             skill_details.append(skill_item["details"])
-            skill_cooldowns.append(skill_item["data"].get("cooldown", None))
+            skill_cooldowns.append(skill_item["data"].get("cooldown", -1))
 
 
         skill_size = SIZES.TILE_SIZE 
@@ -152,7 +141,7 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
                 if is_skill_on_cooldown:
                     color = WHITE
                 
-                footer = None if skill_cooldowns[i] is None else f"Cooldown: {skill_cooldowns[i]}"
+                footer = None if skill_cooldowns[i] <= 0 else f"Cooldown: {skill_cooldowns[i]}"
                 Tooltip().draw(
                     surface=screen,
                     header_font=FONTS.TITLE_FONT,

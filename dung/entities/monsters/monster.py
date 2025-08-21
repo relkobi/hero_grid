@@ -10,6 +10,7 @@ class Monster(Entity):
             health=monster_settings["health"],
             strength=monster_settings["strength"],
             speed=monster_settings["speed"],
+            magic=monster_settings["magic"],
             weapon=monster_settings.get("weapon", "unarmed"),
             attacks=monster_settings.get("attacks", 1),
             shield=monster_settings.get("shield", 0),
@@ -18,4 +19,8 @@ class Monster(Entity):
         )
 
     def perform_monster_action(self, hero):
+        turn_ended, pre_turn_logs = self.pre_turn_check()
+        if turn_ended:
+            return pre_turn_logs
+
         return super().perform_basic_attack(hero)

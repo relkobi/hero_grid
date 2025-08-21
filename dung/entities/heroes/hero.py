@@ -13,7 +13,8 @@ class Hero(Entity):
             name.capitalize(),
             hero_settings["start-health"],
             hero_settings["start-strength"],
-            hero_settings["speed"],
+            hero_settings["start-speed"],
+            hero_settings["start-magic"],
             weapon=hero_settings.get("start-weapon", "unarmed"),
             attacks=hero_settings.get("attacks", 1),
             shield=hero_settings.get("shield", 0),
@@ -70,6 +71,10 @@ class Hero(Entity):
         }
 
     def perform_hero_action(self, enemy: Entity, key: int):
+        turn_ended, pre_turn_logs = self.pre_turn_check()
+        if turn_ended:
+            return pre_turn_logs
+
         if key == pygame.K_SPACE:
             return super().perform_basic_attack(enemy)
         elif key == pygame.K_q:
@@ -81,7 +86,7 @@ class Hero(Entity):
         elif key == pygame.K_r:
             return self.use_ability_r(self.skills[4], enemy)
         else:
-            return [f"{self.name} skipped his tur"] # error?
+            return [f"{self.name} skipped his turn"] # error?
 
     @abstractmethod
     def use_ability_q(self, skill_item, enemy: Entity):
@@ -115,10 +120,13 @@ class Hero(Entity):
         self.max_health += hero_settings["level-health"]
         self.health += hero_settings["level-health"]
         self.strength += hero_settings["level-strength"]
+        self.speed += hero_settings["level-speed"]
+        self.magic += hero_settings["level-magic"]
         self.block += hero_settings["level-block-chance"]
 
     def set_cooldown(self, key: int, turns: int):
-        self.cooldowns[key] = { "key": key, "total_turns": turns, "turns_left": turns }
+        if turns > 0:
+            self.cooldowns[key] = { "key": key, "total_turns": turns, "turns_left": turns }
 
     def remove_cooldown(self, key: int):
         self.cooldowns.pop(key, None)
@@ -135,10 +143,12 @@ class Hero(Entity):
         # self.cooldowns = {} # nof deleted after fight ATM
 
     def tick(self):
-        super().tick()
+        tick_messages = super().tick()
         for cooldown_key in list(self.cooldowns.keys()):
             if self.cooldowns[cooldown_key]['turns_left'] <= 1:
                 self.remove_cooldown(cooldown_key)
 
         for cooldown in self.cooldowns.values():
             cooldown['turns_left'] -= 1
+
+        return tick_messages;
