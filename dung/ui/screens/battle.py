@@ -114,6 +114,18 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
         screen.blit(label, (x_offset, y_offset))
         y_offset += stat_label_height  # Space between stats
 
+    for buff_item in monster.buffs:
+        text = f"{buff_item["name"].capitalize()}: {buff_item["value"]}"
+        label = FONTS.TEXT_FONT.render(text, True, GREEN_COLOR)
+        screen.blit(label, (x_offset, y_offset))
+        y_offset += stat_label_height  # Space between stats
+
+    for debuff_item in monster.debuffs:
+        text = f"{debuff_item["name"].capitalize()}: {debuff_item["value"]}"
+        label = FONTS.TEXT_FONT.render(text, True, RED_COLOR)
+        screen.blit(label, (x_offset, y_offset))
+        y_offset += stat_label_height  # Space between stats
+
     battle_log.draw(screen)
 
     if (fight_over is not True):

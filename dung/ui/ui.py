@@ -146,22 +146,23 @@ def draw_hero_stats(screen, hero):
         _get_attribute_stat_line(hero, "Critical Chance", "critical_hit", hero.critical_hit, 0),
     ]
 
-    # stats = [
-    #     f"Strength: {hero.strength}",
-    #     f"Speed: {hero.speed}",
-    #     f"Weapon: {hero.weapon} ({weapon_damage[0]}-{weapon_damage[1]})",
-    #     f"Attacks: {hero.attacks}",
-    #     f"Damage: {hero.get_damage_string()}",
-    #     f"Shield: {hero.shield}",
-    #     f"Block Chance: {hero.block}%",
-    #     f"Critical Chance: {hero.critical_hit}%",
-    # ]
-
     stat_label_height = FONTS.TEXT_FONT.get_height() + 5
     for text in stats:
         label = FONTS.TEXT_FONT.render(text, True, BLACK)
         screen.blit(label, (x_offset, y_offset))
         y_offset += stat_label_height  # Space between stats
+
+    # for buff_item in hero.buffs:
+    #     text = f"{buff_item["name"].capitalize()}: {buff_item["value"]}"
+    #     label = FONTS.TEXT_FONT.render(text, True, GREEN_COLOR)
+    #     screen.blit(label, (x_offset, y_offset))
+    #     y_offset += stat_label_height  # Space between stats
+
+    # for debuff_item in hero.debuffs:
+    #     text = f"{debuff_item["name"].capitalize()}: {debuff_item["value"]}"
+    #     label = FONTS.TEXT_FONT.render(text, True, RED_COLOR)
+    #     screen.blit(label, (x_offset, y_offset))
+    #     y_offset += stat_label_height  # Space between stats
 
 def _get_attribute_stat_line(hero: Hero, attribute_title: str, attribute_key: str, attribute_base_value: int, default_value: int):
     attribute_modifier = hero.get_buff_combine_value(attribute_key, default_value)
