@@ -54,7 +54,6 @@ class Entity:
         attack_logs = []
 
         attacks_left = 1
-        print(f"hero_modifiers: {hero_modifiers}")
         current_strength = self.strength + self.get_buff_combine_value("strength", 0) + hero_modifiers.get("strength", 0)
         attack_base_damage = current_strength if hero_modifiers.get("attack_base_damage", None) is None else hero_modifiers["attack_base_damage"]
         while attacks_left <= self.attacks:
@@ -167,7 +166,6 @@ class Entity:
                     dots[debuff_name] += debuff_value
 
         for dot_name, dot_value in dots.items():
-            print(f"{self.name} gain {dot_value} damage from {dot_name}")
             self.lose_health(dot_value)
             tick_messages.append(f"{self.name} gain {dot_value} damage from {dot_name}")
 

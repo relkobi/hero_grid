@@ -30,6 +30,7 @@ hero_pos = None
 hero_last_pos = None
 monsters = []
 potions = []
+camp = []
 current_monster = None
 battle_messages = []
 battle_turn = 1
@@ -65,7 +66,7 @@ def place_monsters():
     monsters = []
     while len(monsters) < monsters_count:
         pos = [random.randint(1, COLUMNS_COUNT-1), random.randint(0, ROWS_COUNT-1)]
-        if pos != hero_pos and not any(m['pos'] == pos for m in monsters):
+        if pos != hero_pos and pos != campfire_pos and not any(m['pos'] == pos for m in monsters):
             monster_type = "goblin" if random.randint(0, 1) == 0 else "skeleton"
             monsters.append({
                 'pos': pos,
@@ -212,6 +213,7 @@ while running:
                 # hero_settings = HEROES_SETTINGS[hero_type]
                 hero = get_hero_by_type(hero_type)
                 hero_pos = [0, ROWS_COUNT // 2]
+                campfire_pos = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
                 monsters = place_monsters()
                 potions = place_potions(monsters)
                 state = GAME_RUNNING
@@ -274,7 +276,7 @@ while running:
             if move is True:
                 new_x = hero_pos[0] + dx
                 new_y = hero_pos[1] + dy
-
+                print(f"campfire_pos: {campfire_pos}")
                 if 0 <= new_x < COLUMNS_COUNT and 0 <= new_y < ROWS_COUNT:
                     hero_last_pos = hero_pos
                     hero_pos = [new_x, new_y]
@@ -294,6 +296,10 @@ while running:
                             hero.health = min(hero.max_health, hero.health + 5)
                             potions.remove(p)
                             break
+
+                    if hero_pos == campfire_pos:
+                        hero.rest()
+                        campfire_pos = None
 
         elif state == BATTLE_SCREEN:
             if event.type == pygame.KEYDOWN or event.type == HERO_SKILL_USED:
@@ -397,7 +403,7 @@ while running:
         music_controller.set_state_music(GAME_RUNNING)
         draw_header_section(screen)
         draw_grid(screen, event_list)
-        draw_entities(screen, hero, hero_pos, monsters, potions)
+        draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos)
         draw_hero_stats(screen, hero)
 
     elif state == BATTLE_SCREEN:

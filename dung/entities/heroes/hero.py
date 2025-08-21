@@ -142,6 +142,12 @@ class Hero(Entity):
         super().clear_battle_modifiers()
         # self.cooldowns = {} # nof deleted after fight ATM
 
+    def rest(self):
+        self.health = self.max_health
+        self.cooldowns = {}
+        self.buffs = {}
+        self.debuffs = {}
+
     def tick(self):
         tick_messages = super().tick()
         for cooldown_key in list(self.cooldowns.keys()):

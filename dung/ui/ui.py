@@ -9,26 +9,6 @@ from dung.utils import *
 from dung.font_settings import FONTS
 from dung.images_loader import IMAGES
 
-# knight_img = pygame.image.load(resource_path("dung/assets/knight.png")).convert_alpha()
-# knight_img = pygame.transform.scale(knight_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-# rogue_img = pygame.image.load(resource_path("dung/assets/rogue.png")).convert_alpha()
-# rogue_img = pygame.transform.scale(rogue_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-# mage_img = pygame.image.load(resource_path("dung/assets/mage.png")).convert_alpha()
-# mage_img = pygame.transform.scale(mage_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-# hero_images = {
-#     "knight": knight_img,
-#     "rogue": rogue_img,
-#     "mage": mage_img,
-# }
-
-# goblin_img = pygame.image.load(resource_path("dung/assets/goblin.png")).convert_alpha()
-# goblin_img = pygame.transform.scale(goblin_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-# skeleton_img = pygame.image.load(resource_path("dung/assets/skeleton.png")).convert_alpha()
-# skeleton_img = pygame.transform.scale(skeleton_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-
-# health_potion_img = pygame.image.load(resource_path("dung/assets/health_potion.png")).convert_alpha()
-# health_potion_img = pygame.transform.scale(health_potion_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
-
 
 def draw_grid(screen, event_list):
     mouse_pos = pygame.mouse.get_pos()
@@ -60,10 +40,11 @@ def grid_x_value(position):
 def grid_y_value(position):
     return SIZES.HEADER_SECTION_SIZE + position[1] * SIZES.TILE_SIZE
 
-def draw_entities(screen, hero, hero_pos, monsters, potions):
-    # Draw hero
-    hero_rect = pygame.Rect(grid_x_value(hero_pos), grid_y_value(hero_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
-    screen.blit(IMAGES.heroes[hero.name.lower()], hero_rect)
+def draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos):
+     # Draw campfire
+    if campfire_pos is not None:
+        campfire_rect = pygame.Rect(grid_x_value(campfire_pos), grid_y_value(campfire_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+        screen.blit(IMAGES.misc["campfire"], campfire_rect)
 
     # Draw monsters (green)
     for monster in monsters:
@@ -76,6 +57,11 @@ def draw_entities(screen, hero, hero_pos, monsters, potions):
     for potion in potions:
         p_rect = pygame.Rect(grid_x_value(potion['pos']) + SIZES.TILE_SIZE // 4, grid_y_value(potion['pos']) + SIZES.TILE_SIZE // 4, SIZES.TILE_SIZE//2, SIZES.TILE_SIZE//2)
         screen.blit(IMAGES.misc["health_potion"], p_rect)
+
+    # Draw hero
+    hero_rect = pygame.Rect(grid_x_value(hero_pos), grid_y_value(hero_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+    screen.blit(IMAGES.heroes[hero.name.lower()], hero_rect)
+
 
 def draw_hero_stats(screen, hero):
     x_offset, y_offset = SIZES.WIDTH + 20, SIZES.HEADER_SECTION_SIZE + 10  # Position to start drawing stats

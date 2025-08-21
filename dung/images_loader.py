@@ -36,8 +36,11 @@ class ImagesSettings:
         
         health_potion_img = pygame.image.load(resource_path("dung/assets/health_potion.png"))
         health_potion_img = pygame.transform.scale(health_potion_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+        campfire_img = pygame.image.load(resource_path("dung/assets/campfire.png"))
+        campfire_img = pygame.transform.scale(campfire_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
         self.misc = {
-            "health_potion": health_potion_img
+            "health_potion": health_potion_img,
+            "campfire": campfire_img
         }
 
     def update_by_resolution(self):
