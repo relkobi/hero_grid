@@ -158,11 +158,11 @@ def draw_hero_stats(screen, hero):
     #     screen.blit(label, (x_offset, y_offset))
     #     y_offset += stat_label_height  # Space between stats
 
-    # for debuff_item in hero.debuffs:
-    #     text = f"{debuff_item["name"].capitalize()}: {debuff_item["value"]}"
-    #     label = FONTS.TEXT_FONT.render(text, True, RED_COLOR)
-    #     screen.blit(label, (x_offset, y_offset))
-    #     y_offset += stat_label_height  # Space between stats
+    for debuff_item in hero.debuffs:
+        text = f"{debuff_item["name"].capitalize()}: {debuff_item["value"]}"
+        label = FONTS.TEXT_FONT.render(text, True, RED_COLOR)
+        screen.blit(label, (x_offset, y_offset))
+        y_offset += stat_label_height  # Space between stats
 
 def _get_attribute_stat_line(hero: Hero, attribute_title: str, attribute_key: str, attribute_base_value: int, default_value: int):
     attribute_modifier = hero.get_buff_combine_value(attribute_key, default_value)
