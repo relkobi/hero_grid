@@ -50,7 +50,7 @@ def draw_hero_selection_screen(screen, event_list):
 
         pygame.draw.rect(screen, color, hero_rect)
 
-        hero_image = pygame.image.load(resource_path(f"dung/assets/{hero_name.lower()}.png"))
+        hero_image = pygame.image.load(resource_path(f"dung/assets/images/{hero_name.lower()}.png"))
         hero_image = pygame.transform.scale(hero_image, (hero_size, hero_size))
 
         if (not hero_active):

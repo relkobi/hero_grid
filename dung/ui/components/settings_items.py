@@ -159,15 +159,10 @@ def draw_settings_items(screen, event_list, x_center, y_start):
     y_offset += item_rect.height * 0.5
     global volume_slider
     if volume_slider:
-        if volume_slider.dirty:
-            volume_slider.resize(x_center, y_offset, get_base_width(), FONTS.MEDUIM_FONT)
-            volume_slider.dirty = False
+        volume_slider.resize(x_center, y_offset, get_base_width(), FONTS.MEDUIM_FONT)
         volume_slider.update_volume(game_settings.volume, False)
     else:
         volume_slider = VolumeSlider(x_center, y_offset, get_base_width(), FONTS.MEDUIM_FONT, event_type=SETTINGS_MENU_SET_SOUND_VOLUME, initial_volume=game_settings.volume)
-
-    if resolution_changed:
-        volume_slider.dirty = True # update to true after the check so the state will be checked on next draw call so x,y will get updated
 
     volume_slider.draw(screen)
     for event in event_list:

@@ -26,7 +26,11 @@ def draw_grid(screen, event_list):
                         pygame.event.post(pygame.event.Event(GRID_TILE_CLICKED, {"col": x, "row": y}))
             else:
                 width = 1
-            
+
+            # Draw the tile
+            tile_image = IMAGES.tiles["grass_tile"]
+            screen.blit(tile_image, rect.topleft)
+
             pygame.draw.rect(screen, BLACK, rect, width)
 
 def show_text(screen, font, text, y_offset=0, center=True):
@@ -101,7 +105,7 @@ def draw_hero_stats(screen, hero):
 
     # HERO IMAGE
     image_size = SIZES.TILE_SIZE * 2
-    hero_image = pygame.image.load(resource_path(f"dung/assets/{hero.name.lower()}.png"))
+    hero_image = pygame.image.load(resource_path(f"dung/assets/images/{hero.name.lower()}.png"))
     hero_image = pygame.transform.scale(hero_image, (image_size, image_size))
     image_rect = pygame.Rect(x_offset + (300 - image_size) // 2, y_offset, image_size, image_size)
     screen.blit(hero_image, image_rect)

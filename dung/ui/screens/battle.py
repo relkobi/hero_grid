@@ -1,6 +1,7 @@
 import math
 import pygame
 from dung.entities.heroes.hero import Hero
+from dung.images_loader import IMAGES
 from dung.size_settings import SIZES
 from dung.monster_settings import HEROES_SETTINGS, WEAPON_SETTINGS
 from dung.settings import *
@@ -10,11 +11,12 @@ from dung.font_settings import FONTS
 
 
 def _draw_square_pie(screen, rect, percent, color):
-    if percent <= 0:
-        return
-    if percent >= 100:
-        pygame.draw.rect(screen, color, rect)
-        return
+    # if percent <= 0:
+    #     return
+    # if percent >= 100:
+    #     # pygame.draw.rect(screen, color, rect)
+    #     screen.blit(pygame.Surface(rect.size, pygame.SRCALPHA).convert_alpha().fill(color), rect)
+    #     return
 
     center = (rect.width / 2, rect.height / 2)
     w, h = rect.width, rect.height
@@ -74,7 +76,7 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
     y_offset += FONTS.TITLE_FONT.get_height() + 10
 
     monster_size = SIZES.TILE_SIZE * 2
-    monster_image = pygame.image.load(resource_path(f"dung/assets/{monster.name.lower()}.png"))
+    monster_image = pygame.image.load(resource_path(f"dung/assets/images/{monster.name.lower()}.png"))
     monster_image = pygame.transform.scale(monster_image, (monster_size, monster_size))
     monster_rect = pygame.Rect(x_offset + (300 - monster_size) // 2, y_offset, monster_size, monster_size)
     screen.blit(monster_image, monster_rect)
@@ -175,12 +177,14 @@ def draw_battle_screen(screen, event_list, monster, hero: Hero, battle_log, figh
                 color = WHITE
 
             pygame.draw.rect(screen, color, skill_rect, border_radius=2)
+            skill_image = IMAGES.skills["attack"]
+            screen.blit(skill_image, skill_rect.topleft)
             pygame.draw.rect(screen, BLACK, skill_rect, border_radius=2, width=1)
 
             if is_skill_on_cooldown:
                 skill_cooldown = hero.get_cooldown(pygame_keys[i])
                 percentage = round(skill_cooldown["turns_left"] / skill_cooldown["total_turns"] * 100)
-                _draw_square_pie(screen, skill_rect, percentage, GRAY)
+                _draw_square_pie(screen, skill_rect, percentage, (*BLACK, 200))
 
                 cooldown_label = FONTS.TEXT_FONT.render(str(skill_cooldown["turns_left"]), True, BLACK)
                 cooldown_label_rect = cooldown_label.get_rect()

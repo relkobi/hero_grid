@@ -3,6 +3,7 @@
 import pygame
 import random
 
+from dung.screen_loader import create_screen # keep before any image rendering
 from dung.battle_exceptions.battle_exception import BattleException
 from dung.entities.heroes import Knight, Rogue, Mage
 from dung.entities.monsters.monster import Monster
@@ -54,12 +55,6 @@ battle_log = BattleLog(
 
 music_controller = MusicController(game_settings.sound, game_settings.volume)
 
-def create_screen(fullscreen):
-    flags = (pygame.FULLSCREEN | pygame.SCALED) if fullscreen else 0
-    size = (SIZES.SCREEN_WIDTH, SIZES.SCREEN_HEIGHT)
-
-    return pygame.display.set_mode(size, flags)
-
 screen = create_screen(game_settings.fullscreen)
 
 def is_position_free(position, monsters, potions):
@@ -78,10 +73,7 @@ def is_position_free(position, monsters, potions):
 
 def place_chest():
     position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
-    print(f"position: {position}, chest_pos: {chest_pos}")
     while is_position_free(chest_pos, [], []):
-        print(f"position: {position}, chest_pos: {chest_pos}")
-
         position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
 
     return position
@@ -232,7 +224,7 @@ while running:
             elif event.type == HERO_SELECTION_HERO_CLICKED:
                 hero_type = event.hero
                 # Initialize hero and entities
-                hero_img = pygame.image.load(resource_path(f"dung/assets/{hero_type}.png"))
+                hero_img = pygame.image.load(resource_path(f"dung/assets/images/{hero_type}.png"))
                 hero_img = pygame.transform.scale(hero_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
                 # hero_settings = HEROES_SETTINGS[hero_type]
                 hero = get_hero_by_type(hero_type)
@@ -301,7 +293,7 @@ while running:
             if move is True:
                 new_x = hero_pos[0] + dx
                 new_y = hero_pos[1] + dy
-                print(f"campfire_pos: {campfire_pos}")
+
                 if 0 <= new_x < COLUMNS_COUNT and 0 <= new_y < ROWS_COUNT:
                     hero_last_pos = hero_pos
                     hero_pos = [new_x, new_y]
