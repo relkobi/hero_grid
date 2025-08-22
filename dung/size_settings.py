@@ -28,7 +28,7 @@ class SizeSettings:
         self.HEADER_SECTION_SIZE = self.SCREEN_HEIGHT - self.HEIGHT # all the left over pixel will be added
         self.SIDEBAR_SECTION_SIZE = self.SCREEN_WIDTH - self.WIDTH
 
-        self.TILE_SIZE = self.WIDTH // COLUMNS_COUNT
+        self.TILE_SIZE = self.WIDTH // TILE_COUNT
 
 
     def update_resolution(self, screen_width: int, screen_height: int):

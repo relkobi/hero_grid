@@ -10,12 +10,26 @@ from dung.font_settings import FONTS
 from dung.images_loader import IMAGES
 
 
-def draw_grid(screen, event_list):
+def draw_grid(screen, event_list, hero_pos):
     mouse_pos = pygame.mouse.get_pos()
-    for x in range(0, COLUMNS_COUNT, 1):
-        for y in range(0, ROWS_COUNT, 1):
-            rect = pygame.Rect(x * SIZES.TILE_SIZE, SIZES.HEADER_SECTION_SIZE + y * SIZES.TILE_SIZE, SIZES.TILE_SIZE, SIZES.TILE_SIZE)
-            if rect.collidepoint(mouse_pos):
+    print(f"hero_pos: {hero_pos}")
+    # columns_range = [max(0, hero_pos[0] - 4), min(COLUMNS_COUNT, hero_pos[0] + 6)]
+    # rows_range = [max(0, hero_pos[1] - 4), min(ROWS_COUNT, hero_pos[1] + 6)]
+    columns_range = [hero_pos[0] - 4, hero_pos[0] + 6]
+    rows_range = [hero_pos[1] - 4, hero_pos[1] + 6]
+    offset_pos = pygame.math.Vector2(hero_pos[0] - 4, hero_pos[1] - 4)
+
+    print(f"draw_grid hero_pos: {hero_pos} columns_range: {columns_range}: rows_range, {rows_range}, offset_pos: {offset_pos}")
+
+    # for x in range(0, COLUMNS_COUNT, 1):
+    #     for y in range(0, ROWS_COUNT, 1):
+    for x in range(columns_range[0], columns_range[1], 1):
+        for y in range(rows_range[0], rows_range[1], 1):
+            rect = pygame.Rect((x - offset_pos[0]) * SIZES.TILE_SIZE, SIZES.HEADER_SECTION_SIZE + (y - offset_pos[1]) * SIZES.TILE_SIZE, SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+            
+            in_range = (0 <= x) and (x < COLUMNS_COUNT) and (0 <= y) and (y < ROWS_COUNT)
+            print(f"in_range: {in_range} (0<={x}<{COLUMNS_COUNT},0<={y}<{ROWS_COUNT})")
+            if in_range and rect.collidepoint(mouse_pos):
                 width = 3
                 pygame.draw.rect(screen, darker_color(WHITE), rect)
                 pygame.event.post(pygame.event.Event(GRID_TILE_HOVERED, {"col": x, "row": y}))
@@ -24,6 +38,8 @@ def draw_grid(screen, event_list):
                 for event in event_list:
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         pygame.event.post(pygame.event.Event(GRID_TILE_CLICKED, {"col": x, "row": y}))
+            elif not in_range:
+                width = 52
             else:
                 width = 1
 
@@ -38,41 +54,56 @@ def show_text(screen, font, text, y_offset=0, center=True):
     rect = label.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + y_offset)) if center else (10, 10 + y_offset)
     screen.blit(label, rect)
 
-def grid_x_value(position):
-    return position[0] * SIZES.TILE_SIZE
+def grid_x_value(position, offset_pos):
+    return (position[0] - offset_pos[0]) * SIZES.TILE_SIZE
 
-def grid_y_value(position):
-    return SIZES.HEADER_SECTION_SIZE + position[1] * SIZES.TILE_SIZE
+def grid_y_value(position, offset_pos):
+    return SIZES.HEADER_SECTION_SIZE + (position[1] - offset_pos[1]) * SIZES.TILE_SIZE
+
+def is_in_visible_range(hero_pos, object_pos):
+    if object_pos[0] < hero_pos[0] - 4:
+        return False
+    if object_pos[0] > hero_pos[0] + 5:
+        return False
+    if object_pos[1] < hero_pos[1] - 4:
+        return False
+    if object_pos[1] > hero_pos[1] + 5:
+        return False
+
+    return True
 
 def draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos, chest_pos):
+    offset_pos = pygame.math.Vector2(hero_pos[0] - 4, hero_pos[1] - 4)
     # Draw campfire
-    if campfire_pos is not None:
-        campfire_rect = pygame.Rect(grid_x_value(campfire_pos), grid_y_value(campfire_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+    if campfire_pos is not None and is_in_visible_range(hero_pos, campfire_pos):
+        campfire_rect = pygame.Rect(grid_x_value(campfire_pos, offset_pos), grid_y_value(campfire_pos, offset_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
         screen.blit(IMAGES.misc["campfire"], campfire_rect)
 
     # Draw chest
-    if chest_pos is not None:
-        campfire_rect = pygame.Rect(grid_x_value(chest_pos), grid_y_value(chest_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+    if chest_pos is not None and is_in_visible_range(hero_pos, chest_pos):
+        campfire_rect = pygame.Rect(grid_x_value(chest_pos, offset_pos), grid_y_value(chest_pos, offset_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
         screen.blit(IMAGES.misc["chest"], campfire_rect)
 
     # Draw monsters (green)
     for monster in monsters:
-        m_rect = pygame.Rect(grid_x_value(monster['pos']), grid_y_value(monster['pos']), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
-        monster_type = monster["entity"].name.lower()
-        monster_image = IMAGES.monsters["goblin"] if monster_type == "goblin" else IMAGES.monsters["skeleton"]
-        screen.blit(monster_image, m_rect)
+        if is_in_visible_range(hero_pos, monster['pos']):
+            m_rect = pygame.Rect(grid_x_value(monster['pos'], offset_pos), grid_y_value(monster['pos'], offset_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+            monster_type = monster["entity"].name.lower()
+            monster_image = IMAGES.monsters["goblin"] if monster_type == "goblin" else IMAGES.monsters["skeleton"]
+            screen.blit(monster_image, m_rect)
 
     # Draw potions (red)
     for potion in potions:
-        p_rect = pygame.Rect(grid_x_value(potion['pos']) + SIZES.TILE_SIZE // 4, grid_y_value(potion['pos']) + SIZES.TILE_SIZE // 4, SIZES.TILE_SIZE//2, SIZES.TILE_SIZE//2)
-        screen.blit(IMAGES.misc["health_potion"], p_rect)
+        if is_in_visible_range(hero_pos, potion['pos']):
+            p_rect = pygame.Rect(grid_x_value(potion['pos'], offset_pos) + SIZES.TILE_SIZE // 4, grid_y_value(potion['pos'], offset_pos) + SIZES.TILE_SIZE // 4, SIZES.TILE_SIZE//2, SIZES.TILE_SIZE//2)
+            screen.blit(IMAGES.misc["health_potion"], p_rect)
 
     # Draw hero
-    hero_rect = pygame.Rect(grid_x_value(hero_pos), grid_y_value(hero_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+    hero_rect = pygame.Rect(grid_x_value(hero_pos, offset_pos), grid_y_value(hero_pos, offset_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
     screen.blit(IMAGES.heroes[hero.name.lower()], hero_rect)
 
 
-def draw_hero_stats(screen, hero):
+def draw_hero_stats(screen, hero, hero_pos):
     x_offset, y_offset = SIZES.WIDTH + 20, SIZES.HEADER_SECTION_SIZE + 10  # Position to start drawing stats
 
     label = FONTS.TITLE_FONT.render(hero.name, True, BLACK)
@@ -139,6 +170,7 @@ def draw_hero_stats(screen, hero):
         _get_attribute_stat_line(hero, "Shield", "shield", hero.shield, 0),
         _get_attribute_stat_line(hero, "Block Chance", "block", hero.block, 0),
         _get_attribute_stat_line(hero, "Critical Chance", "critical_hit", hero.critical_hit, 0),
+        f"Position: {hero_pos}"
     ]
 
     stat_label_height = FONTS.TEXT_FONT.get_height() + 5

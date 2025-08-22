@@ -57,6 +57,13 @@ music_controller = MusicController(game_settings.sound, game_settings.volume)
 
 screen = create_screen(game_settings.fullscreen)
 
+def generate_map(rows_count, columns_count):
+    default_value = None
+    map = [[default_value for _ in range(columns_count)] for _ in range(rows_count)]
+
+    return map
+
+
 def is_position_free(position, monsters, potions):
     if hero_pos == position:
         return False
@@ -72,9 +79,9 @@ def is_position_free(position, monsters, potions):
         return True;
 
 def place_chest():
-    position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+    position = [random.randint(ROWS_COUNT // 2, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
     while is_position_free(chest_pos, [], []):
-        position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+        position = [random.randint(ROWS_COUNT // 2, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
 
     return position
 
@@ -229,7 +236,7 @@ while running:
                 # hero_settings = HEROES_SETTINGS[hero_type]
                 hero = get_hero_by_type(hero_type)
                 hero_pos = [0, ROWS_COUNT // 2]
-                campfire_pos = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+                campfire_pos = [random.randint(ROWS_COUNT // 2, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
                 chest_pos = place_chest()
                 monsters = place_monsters()
                 potions = place_potions(monsters)
@@ -254,7 +261,6 @@ while running:
                         break
             elif options_state is OM_SETTINGS_ITEM:
                 handle_settings_items_events()
-
 
         elif state == GAME_RUNNING:
             move = False
@@ -428,20 +434,20 @@ while running:
     elif state == GAME_RUNNING:
         music_controller.set_state_music(GAME_RUNNING)
         draw_header_section(screen)
-        draw_grid(screen, event_list)
+        draw_grid(screen, event_list, hero_pos)
         draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos, chest_pos)
-        draw_hero_stats(screen, hero)
+        draw_hero_stats(screen, hero, hero_pos)
 
     elif state == BATTLE_SCREEN:
         music_controller.set_state_music(BATTLE_SCREEN)
         draw_header_section(screen)
-        draw_hero_stats(screen, hero)
+        draw_hero_stats(screen, hero, hero_pos)
         draw_battle_screen(screen, event_list, current_monster['entity'], hero, battle_log)
     
     elif state == BATTLE_END_SCREEN:
         music_controller.set_state_music(BATTLE_END_SCREEN)
         draw_header_section(screen)
-        draw_hero_stats(screen, hero)
+        draw_hero_stats(screen, hero, hero_pos)
         draw_battle_screen(screen, event_list, current_monster['entity'], hero, battle_log, True)
         show_text(screen, FONTS.LARGE_FONT, "Fight Over", y_offset=-100)
         show_text(screen, FONTS.TITLE_FONT, "press any key to continue...")
