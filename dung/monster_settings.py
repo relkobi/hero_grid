@@ -27,12 +27,28 @@ MONSTERS_SETTINGS = {
         "shield": 0,
         "critical-hit": 0,
         "block": 0,
+    },
+    "mimic_chest": {
+        "level": 3,
+        "health": 32,
+        "strength": 6,
+        "speed": 5,
+        "magic": 0,
+        "weapon": "teeth",
+        "xp": 20,
+        "attacks": 1,
+        "shield": 1,
+        "critical-hit": 10,
+        "block": 0,
     }
 }
 
 WEAPON_SETTINGS = {
     "unarmed": {
         "damage": [1,1]
+    },
+    "teeth": {
+        "damage": [4,6]
     },
     "dagger": {
         "damage": [1,4]

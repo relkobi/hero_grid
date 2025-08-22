@@ -27,10 +27,11 @@ pygame.display.set_caption("Grid Hero")
 # Game variables
 hero = None
 hero_pos = None
+campfire_pos = None
+chest_pos = None
 hero_last_pos = None
 monsters = []
 potions = []
-camp = []
 current_monster = None
 battle_messages = []
 battle_turn = 1
@@ -61,12 +62,36 @@ def create_screen(fullscreen):
 
 screen = create_screen(game_settings.fullscreen)
 
+def is_position_free(position, monsters, potions):
+    if hero_pos == position:
+        return False
+    elif campfire_pos == position:
+        return False
+    elif chest_pos == position:
+        return False
+    elif any(m['pos'] == position for m in monsters):
+        return False
+    elif any(p['pos'] == position for p in potions): 
+        return False
+    else:
+        return True;
+
+def place_chest():
+    position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+    print(f"position: {position}, chest_pos: {chest_pos}")
+    while is_position_free(chest_pos, [], []):
+        print(f"position: {position}, chest_pos: {chest_pos}")
+
+        position = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+
+    return position
+
 def place_monsters():
     monsters_count = random.randint(round(TILE_COUNT) - 1, round(TILE_COUNT) + 1)
     monsters = []
     while len(monsters) < monsters_count:
         pos = [random.randint(1, COLUMNS_COUNT-1), random.randint(0, ROWS_COUNT-1)]
-        if pos != hero_pos and pos != campfire_pos and not any(m['pos'] == pos for m in monsters):
+        if is_position_free(pos, monsters, []):
             monster_type = "goblin" if random.randint(0, 1) == 0 else "skeleton"
             monsters.append({
                 'pos': pos,
@@ -78,12 +103,12 @@ def place_monsters():
 def place_potions(monsters):
     # 1 potion for each 2 monsters
     count = len(monsters) // 2
-    pots = []
-    while len(pots) < count:
+    potions = []
+    while len(potions) < count:
         pos = [random.randint(1, COLUMNS_COUNT-1), random.randint(0, ROWS_COUNT-1)]
-        if pos != hero_pos and not any(m['pos'] == pos for m in monsters) and not any(p['pos'] == pos for p in pots):
-            pots.append({'pos': pos})
-    return pots
+        if is_position_free(pos, monsters, potions):
+            potions.append({'pos': pos})
+    return potions
 
 def handle_hero_action(key):
     pre_action_messages = hero.tick()
@@ -196,7 +221,6 @@ while running:
             break
 
         elif state == CREDITS_SCREEN:
-            print("credits")
             if event.type == pygame.KEYDOWN:
                 state = START_SCREEN
                 credits_screen.reset()
@@ -214,6 +238,7 @@ while running:
                 hero = get_hero_by_type(hero_type)
                 hero_pos = [0, ROWS_COUNT // 2]
                 campfire_pos = [random.randint(ROWS_COUNT-4, ROWS_COUNT-2), random.randint(1, COLUMNS_COUNT-2)]
+                chest_pos = place_chest()
                 monsters = place_monsters()
                 potions = place_potions(monsters)
                 state = GAME_RUNNING
@@ -301,6 +326,14 @@ while running:
                         hero.rest()
                         campfire_pos = None
 
+                    if hero_pos == chest_pos:
+                        current_monster = { "entity": Monster("mimic_chest"), "pos": chest_pos }
+                        chest_pos = None
+                        battle_log.clear()
+                        battle_turn = 1
+                        state = BATTLE_SCREEN
+                        break
+
         elif state == BATTLE_SCREEN:
             if event.type == pygame.KEYDOWN or event.type == HERO_SKILL_USED:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -364,7 +397,8 @@ while running:
                 if hero.health <= 0:
                     state = LOSE_SCREEN
                 else:    
-                    monsters.remove(current_monster)
+                    if current_monster in monsters:
+                        monsters.remove(current_monster)
                     current_monster = None
                     hero.clear_battle_modifiers()
 
@@ -403,7 +437,7 @@ while running:
         music_controller.set_state_music(GAME_RUNNING)
         draw_header_section(screen)
         draw_grid(screen, event_list)
-        draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos)
+        draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos, chest_pos)
         draw_hero_stats(screen, hero)
 
     elif state == BATTLE_SCREEN:

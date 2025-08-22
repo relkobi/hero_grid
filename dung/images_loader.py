@@ -29,18 +29,24 @@ class ImagesSettings:
         goblin_img = pygame.transform.scale(goblin_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
         skeleton_img = pygame.image.load(resource_path("dung/assets/skeleton.png"))
         skeleton_img = pygame.transform.scale(skeleton_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+        mimic_chest_img = pygame.image.load(resource_path("dung/assets/mimic_chest.png"))
+        mimic_chest_img = pygame.transform.scale(mimic_chest_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
         self.monsters = {
-            "goblin":goblin_img,
-            "skeleton": skeleton_img
+            "goblin": goblin_img,
+            "skeleton": skeleton_img,
+            "mimic_chest": mimic_chest_img,
         }
         
         health_potion_img = pygame.image.load(resource_path("dung/assets/health_potion.png"))
         health_potion_img = pygame.transform.scale(health_potion_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
         campfire_img = pygame.image.load(resource_path("dung/assets/campfire.png"))
         campfire_img = pygame.transform.scale(campfire_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
+        chest_img = pygame.image.load(resource_path("dung/assets/chest.png"))
+        chest_img = pygame.transform.scale(chest_img, (SIZES.TILE_SIZE, SIZES.TILE_SIZE))
         self.misc = {
             "health_potion": health_potion_img,
-            "campfire": campfire_img
+            "campfire": campfire_img,
+            "chest": chest_img,
         }
 
     def update_by_resolution(self):

@@ -40,11 +40,16 @@ def grid_x_value(position):
 def grid_y_value(position):
     return SIZES.HEADER_SECTION_SIZE + position[1] * SIZES.TILE_SIZE
 
-def draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos):
-     # Draw campfire
+def draw_entities(screen, hero, hero_pos, monsters, potions, campfire_pos, chest_pos):
+    # Draw campfire
     if campfire_pos is not None:
         campfire_rect = pygame.Rect(grid_x_value(campfire_pos), grid_y_value(campfire_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
         screen.blit(IMAGES.misc["campfire"], campfire_rect)
+
+    # Draw chest
+    if chest_pos is not None:
+        campfire_rect = pygame.Rect(grid_x_value(chest_pos), grid_y_value(chest_pos), SIZES.TILE_SIZE, SIZES.TILE_SIZE)
+        screen.blit(IMAGES.misc["chest"], campfire_rect)
 
     # Draw monsters (green)
     for monster in monsters:
